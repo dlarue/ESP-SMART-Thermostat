@@ -95,7 +95,7 @@ const char* Timezone   = "GMT0BST,M3.5.0/01,M10.5.0/02";
 
 // System values
 String sitetitle            = "Smart Thermostat";
-String Year                 = "2022";     // For the footer line
+String Year                 = "2020";     // For the footer line
 float  Temperature          = 0;          // Variable for the current temperature
 float  Humidity             = 0;          // Variable for the current temperature
 
