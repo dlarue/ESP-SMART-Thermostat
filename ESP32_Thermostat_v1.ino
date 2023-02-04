@@ -21,10 +21,15 @@
 #include <SPIFFS.h>                    // Built-in
 #include "ESPAsyncWebServer.h"         // https://github.com/me-no-dev/ESPAsyncWebServer/tree/63b5303880023f17e1bca517ac593d8a33955e94
 #include "AsyncTCP.h"                  // https://github.com/me-no-dev/AsyncTCP
+//#define SENSOR_HTU21  //Uncomment this and the 3 lines following it if you are using an SHT21 Temp/Bar sensor
+//#include <Wire.h>
+//#include "Adafruit_HTU21DF.h"
+//Adafruit_HTU21DF sensor = Adafruit_HTU21DF();
+#define SENSOR_BME280
+  //Uncomment this and the 3 lines following it if you are using an BME280 Temp/Bar sensor
 #include <Adafruit_Sensor.h>           // Adafruit sensor
 #include <Adafruit_BME280.h>           // For BME280 support
 Adafruit_BME280 sensor;                // I2C mode
-
 //################  VERSION  ###########################################
 String version = "1.0";      // Programme version, see change log at end
 //################ VARIABLES ###########################################
@@ -82,6 +87,7 @@ const char* Timezone   = "GMT0BST,M3.5.0/01,M10.5.0/02";
 //const char* Timezone = "EST-2METDST,M3.5.0/01,M10.5.0/02"; // Most of Europe
 //const char* Timezone = "EST5EDT,M3.2.0,M11.1.0";           // EST USA
 //const char* Timezone = "CST6CDT,M3.2.0,M11.1.0";           // CST USA
+//const char* Timezone = "PST8PDT,M3.2.0,M11.1.0";           // PST USA
 //const char* Timezone = "MST7MDT,M4.1.0,M10.5.0";           // MST USA
 //const char* Timezone = "NZST-12NZDT,M9.5.0,M4.1.0/3";      // Auckland
 //const char* Timezone = "EET-2EEST,M3.5.5/0,M10.5.5/0";     // Asia
@@ -89,7 +95,7 @@ const char* Timezone   = "GMT0BST,M3.5.0/01,M10.5.0/02";
 
 // System values
 String sitetitle            = "Smart Thermostat";
-String Year                 = "2020";     // For the footer line
+String Year                 = "2022";     // For the footer line
 float  Temperature          = 0;          // Variable for the current temperature
 float  Humidity             = 0;          // Variable for the current temperature
 
@@ -774,14 +780,24 @@ void RecoverSettings() {
 //#########################################################################################
 void StartSensor() {
   Wire.setClock(100000);                           // Slow down the SPI bus for some BME280 devices
-  if (!simulating) {                               // If not sensor simulating, then start the real one
+  if (!simulating) {
+    #ifdef SENSOR_HTU21
+    bool status = sensor.begin();
+    #endif
+    #ifdef SENSOR_BME280
     bool status = sensor.begin(SensorAddress);     // You can also pass a Wire library object like &Wire2, e.g. status = bme.begin(0x76, &Wire2);
+    #endif
     if (!status) {
+      #ifdef SENSOR_HTU21
+      Serial.println("Could not find a valid SHT21 sensor, check wiring, address and sensor ID!");
+      #endif
+      #ifdef SENSOR_BME280
       Serial.println("Could not find a valid BME280 sensor, check wiring, address and sensor ID!");
       Serial.print("SensorID is: 0x"); Serial.println(sensor.sensorID(), 16);
       Serial.print("       ID of 0xFF probably means a bad address, or a BMP 180 or BMP 085 or BMP280\n");
       Serial.print("  ID of 0x56-0x58 represents a BMP 280,\n");
       Serial.print("       ID of 0x60 represents a BME 280.\n");
+      #endif
     }
     else {
       Serial.println("Sensor started...");
