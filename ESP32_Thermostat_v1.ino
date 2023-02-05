@@ -355,8 +355,8 @@ void Setup() {
   webpage += "</tr>";
   webpage += "<tr>";
   webpage += "<td><label for='manualoveride'>Manual heating over-ride </label></td>";
-  webpage += "<td><select name='manualoverride'><option value='ON'>ON</option>";
-  webpage += "<option selected value='OFF'>OFF</option></select></td>"; // ON/OFF
+  webpage += "<td><select name='manualoverride'><option "+ String(ManualOverride ? "selected" : " ") + " value='ON'>ON</option>";
+  webpage += "<option " + String(ManualOverride ? " " : "selected") + " value='OFF'>OFF</option></select></td>"; // ON/OFF
   webpage += "</tr>";
   webpage += "<td><label for='manualoverridetemp'>Manual Override Temperature&deg; </label></td>";
   webpage += "<td><input type='text' size='4' pattern='[0-9]*' name='manualoverridetemp' value='" + String(ManOverrideTemp, 0) + "'></td>"; // 00-99 valid input style
@@ -520,7 +520,7 @@ void ActuateHeating(bool demand) {
     {
       digitalWrite(RelayPIN, HIGH);
     }
-    digitalWrite(LEDPIN, LOW);
+    digitalWrite(LEDPIN, HIGH);
     Serial.println("Thermostat ON");
   }
   else
@@ -533,7 +533,7 @@ void ActuateHeating(bool demand) {
     {
       digitalWrite(RelayPIN, LOW);
     }
-    digitalWrite(LEDPIN, HIGH);
+    digitalWrite(LEDPIN, LOW);
     Serial.println("Thermostat OFF");
   }
 }
