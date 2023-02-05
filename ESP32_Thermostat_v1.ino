@@ -21,15 +21,14 @@
 #include <SPIFFS.h>                    // Built-in
 #include "ESPAsyncWebServer.h"         // https://github.com/me-no-dev/ESPAsyncWebServer/tree/63b5303880023f17e1bca517ac593d8a33955e94
 #include "AsyncTCP.h"                  // https://github.com/me-no-dev/AsyncTCP
-//#define SENSOR_HTU21  //Uncomment this and the 3 lines following it if you are using an SHT21 Temp/Bar sensor
-//#include <Wire.h>
-//#include "Adafruit_HTU21DF.h"
-//Adafruit_HTU21DF sensor = Adafruit_HTU21DF();
-#define SENSOR_BME280
-  //Uncomment this and the 3 lines following it if you are using an BME280 Temp/Bar sensor
-#include <Adafruit_Sensor.h>           // Adafruit sensor
-#include <Adafruit_BME280.h>           // For BME280 support
-Adafruit_BME280 sensor;                // I2C mode
+#define SENSOR_HTU21
+#include <Wire.h>
+#include "Adafruit_HTU21DF.h"
+Adafruit_HTU21DF sensor = Adafruit_HTU21DF();
+//#define SENSOR_BME280
+//#include <Adafruit_Sensor.h>           // Adafruit sensor
+//#include <Adafruit_BME280.h>           // For BME280 support
+//Adafruit_BME280 sensor;                // I2C mode
 //################  VERSION  ###########################################
 String version = "1.0";      // Programme version, see change log at end
 //################ VARIABLES ###########################################
@@ -80,7 +79,7 @@ const String data2Colour    = "orange";
 //################ VARIABLES ################
 const char* ssid       = "yourSSID";             // WiFi SSID     replace with details for your local network
 const char* password   = "YourPASSWORD";         // WiFi Password replace with details for your local network
-const char* Timezone   = "GMT0BST,M3.5.0/01,M10.5.0/02";
+const char* Timezone   = "PST8PDT,M3.2.0,M11.1.0"; //"GMT0BST,M3.5.0/01,M10.5.0/02";
 // Example time zones
 //const char* Timezone = "MET-1METDST,M3.5.0/01,M10.5.0/02"; // Most of Europe
 //const char* Timezone = "CET-1CEST,M3.5.0,M10.5.0/3";       // Central Europe
@@ -111,7 +110,7 @@ String TimerState           = "OFF";      // Current setting of the timer
 String Units                = "M";        // or Units = "I" for °F and 12:12pm time format
 
 String webpage              = "";         // General purpose variable to hold HTML code for display
-int    TimerCheckDuration   = 5000;       // Check for timer event every 5-seconds
+int    TimerCheckDuration   = 10000;       // Check for timer event every 10-seconds
 int    LastReadingDuration  = 1;          // Add sensor reading every n-mins
 int    LastTimerSwitchCheck = 0;          // Counter for last timer check
 int    LastReadingCheck     = 0;          // Counter for last reading saved check
@@ -222,12 +221,15 @@ void loop() {
     AssignSensorReadingsToArray();
   }
 }
+float convertCtoF(float tempC ){
+return (tempC*9/5)+32;
+}
 //#########################################################################################
 void Homepage() {
-  ReadSensor();
+  //DJL ReadSensor();
   append_HTML_header(Refresh);
   webpage += "<h2>Smart Thermostat Status</h2><br>";
-  webpage += "<div class='numberCircle'><span class=" + String((RelayState == "ON" ? "'on'>" : "'off'>")) + String(Temperature, 1) + "&deg;</span></div><br><br><br>";
+  webpage += "<div class='numberCircle'><span class=" + String((RelayState == "ON" ? "'on'>" : "'off'>")) + String(convertCtoF(Temperature), 1) + "&deg;</span></div><br><br><br>";
   webpage += "<table class='centre'>";
   webpage += "<tr>";
   webpage += "<td>Temperature</td>";
@@ -240,9 +242,10 @@ void Homepage() {
   }
   webpage += "</tr>";
   webpage += "<tr>";
-  webpage += "<td class='large'>" + String(Temperature, 1)       + "&deg;</td>";
+//  webpage += "<td class='large'>" + String(Temperature, 1)+"&deg"+"("+String(convertCtoF(Temperature),1)+"&deg"+"F);</td>";
+  webpage += "<td class='large'>" + String(Temperature, 1)+"&deg/"+"<font size='-1'>"+String(convertCtoF(Temperature),1)+"&deg"+"F</font></td>";
   webpage += "<td class='large'>" + String(Humidity, 0)          + "%</td>";
-  webpage += "<td class='large'>" + String(TargetTemp, 1) + "&deg;</td>";
+  webpage += "<td class='large'>" + String(TargetTemp, 1)+"&deg"+"/"+"<font size='-1'>"+String(convertCtoF(TargetTemp),1)+"&deg"+"F</font></td>";
   webpage += "<td class='large'><span class=" + String((RelayState == "ON" ? "'on'>" : "'off'>")) + RelayState + "</span></td>"; // (condition ? that : this) if this then that else this
   webpage += "<td class='large'><span class=" + String((TimerState == "ON" ? "'on'>" : "'off'>")) + TimerState + "</span></td>";
   if (ManualOverride) {
